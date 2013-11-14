@@ -23,11 +23,20 @@ server.get('/tp/:tracking', function (req, res, next) {
   var intrv;
 
   function limp(){
-    if(current >= total) return res.end();
+    if(current >= total) {
+      clearInterval(intrv);
+      return res.end();
+    }
 
     query.invoke(["UPDATE tracking_pixels SET time_viewed = time_viewed + 1 WHERE tracking = ($1)", [req.params.tracking]]).then(function () {
       var slc = img.slice(current, ++current);
-      return res.write(slc);
+      var didWrite = res.write(slc);
+      console.log("Did write: " + didWrite);
+
+      if(didWrite === false) {
+        clearInterval(intrv);
+        return res.end();
+      }
     })
   }
 
