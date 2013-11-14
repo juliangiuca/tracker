@@ -44,7 +44,9 @@ server.get('/tp/:tracking', function (req, res, next) {
   });
 });
 
-var conString = "postgres://local:@localhost/emailer_development";
+var dbDetails = process.env.HEROKU_POSTGRESQL_URL
+
+var conString = dbDetails || "postgres://local:@localhost/emailer_development";
 
 pg.connect(conString, function(err, client, done) {
   query.init({pool: pg, dbUrl: conString})
