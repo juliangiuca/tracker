@@ -69,7 +69,8 @@ var conString = dbDetails || "postgres://local:@localhost/emailer_development";
 pg.connect(conString, function(err, client, done) {
   query.init({pool: pg, dbUrl: conString})
 
-  server.listen(8080, function () {
+  var port = process.env.PORT || 5000;
+  server.listen(port, function () {
     console.log('%s listening at %s', server.name, server.url);
   });
 });
