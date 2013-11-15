@@ -17,6 +17,11 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
 
+server.get('/ping', function (req, res, next) {
+  res.send(200, {still: 'alive'})
+  return next();
+}
+
 server.get('/tp/:tracking', function (req, res, next) {
   var current = 0;
   var total = img.length;
