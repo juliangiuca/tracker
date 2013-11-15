@@ -1,0 +1,25 @@
+{
+  "name": "image-tracking",
+  "version": "0.0.1",
+  "private": true,
+  "description": "blue balls for computers",
+  "main": "image.js",
+  "dependencies": {
+    "pg": "~2.8.2",
+    "q": "~0.9.7",
+    "restify": "~2.6.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juliangiuca/image-tracking.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/juliangiuca/image-tracking/issues"
+  }
+}
