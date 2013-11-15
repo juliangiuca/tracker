@@ -40,17 +40,26 @@ server.get('/tp/:tracking', function (req, res, next) {
     })
   }
 
-  res.setHeader('Content-Type', 'image/gif')
-  res.setHeader('Content-Length', img.length)
-  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", 0);
 
-  query.invoke(["UPDATE tracking_pixels SET views = views + 1, date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1)", [req.params.tracking]]).then(function () {
-    intrv = setInterval(limp, 100);
+  query.invoke(["UPDATE tracking_pixels SET views = views + 1, date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1) RETURNING id", [req.params.tracking]])
+    .then(function (results) {
+      var tp_id = results[0].id;
+      return query.invoke(["INSERT INTO user_agents (tracking_pixel_id, agent, referer, created_at) VALUES ($1, $2, $3, now())", [tp_id, req.headers['user-agent'], req.headers["referer"]]])
+    }).then(function() {
+      intrv = setInterval(limp, 100);
 
-    return next();
-  });
+      res.setHeader('Content-Type', 'image/gif')
+      res.setHeader('Content-Length', img.length)
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", 0);
+
+      return next(); 
+    }, function (err) {
+
+      res.send(404, {error: 'not found'});
+      return next();
+    });
 });
 
 var dbDetails = process.env.HEROKU_POSTGRESQL_URL
