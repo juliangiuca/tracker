@@ -6,7 +6,7 @@ var fs = require('fs'),
     Q = require("q");
 
 
-var img = fs.readFileSync('./tracking.gif');
+var img = fs.readFileSync(path.resolve(__dirname, './tracking.gif'));
 
 var server = restify.createServer({
   name: 'myapp',
