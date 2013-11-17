@@ -3,7 +3,8 @@ var fs = require('fs'),
     restify = require('restify'),
     query = require('./query'),
     pg = require("pg"),
-    Q = require("q");
+    Q = require("q"),
+    path = require('path');
 
 
 var img = fs.readFileSync(path.resolve(__dirname, './tracking.gif'));
