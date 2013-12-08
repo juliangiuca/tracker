@@ -1,0 +1,9 @@
+{
+  "database": {
+    "host": "localhost",
+    "username": "local",
+    "password": "",
+    "database": "emailer_development"
+  }
+}
+

@@ -1,27 +1,36 @@
-var fs = require('fs'),
-    http = require('http'),
-    restify = require('restify'),
-    query = require('./query'),
-    pg = require("pg"),
-    Q = require("q"),
-    path = require('path');
+var fs       = require('fs'),
+    http     = require('http'),
+    restify  = require('restify'),
+    query    = require('./query'),
+    pg       = require("pg"),
+    Q        = require("q"),
+    path     = require('path'),
+    settings = require('./config/settings');
 
 
 var img = fs.readFileSync(path.resolve(__dirname, './tracking.gif'));
 
 var server = restify.createServer({
-  name: 'myapp',
+  name: 'tracker',
   version: '1.0.0'
 });
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-
-server.get('/ping', function (req, res, next) {
+server.get('/status/ping', function (req, res, next) {
   res.send(200, {still: 'alive'})
   return next();
 });
+
+server.get('/status/db', function (req, res, next) {
+  query.invoke(["SELECT pg_stat_get_backend_pid(s.backendid) AS procpid, " +
+                 "pg_stat_get_backend_activity(s.backendid) AS current_query " +
+                 "FROM (SELECT pg_stat_get_backend_idset() AS backendid) AS s;", []]).then(function (dbStatus) {
+    res.send(200, dbStatus);
+    return next();
+  })
+})
 
 server.get('/tp/:tracking', function (req, res, next) {
   var current = 0;
@@ -68,9 +77,11 @@ server.get('/tp/:tracking', function (req, res, next) {
     });
 });
 
-var dbDetails = process.env.HEROKU_POSTGRESQL_URL
-
-var conString = dbDetails || "postgres://local:@localhost/emailer_development";
+var conString = "postgres://" +
+  settings.database.username +
+  ":" + settings.database.password +
+  "@" + settings.database.host + 
+  "/" + settings.database.database;
 
 pg.connect(conString, function(err, client, done) {
   query.init({pool: pg, dbUrl: conString})
