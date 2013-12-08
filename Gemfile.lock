@@ -7,6 +7,7 @@ GEM
       sshkit (>= 0.0.23)
     capistrano-npm (0.0.5)
       capistrano (>= 3.0.0.pre)
+    dotenv (0.9.0)
     i18n (0.6.9)
     net-scp (1.1.2)
       net-ssh (>= 2.6.5)
@@ -26,3 +27,4 @@ PLATFORMS
 DEPENDENCIES
   capistrano (~> 3.0.0)
   capistrano-npm
+  dotenv
