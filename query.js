@@ -4,13 +4,12 @@ var Q = require("q");
 module.exports = {
   init: function (options) {
     pool = options.pool;
-    dbUrl = options.dbUrl;
   },
 
   invoke: function(sql) {
     var deferred = Q.defer();
 
-    pool.connect(dbUrl, function (err, client, done) {
+    pool.connect(function (err, client, done) {
       if (err) deferred.reject(err)
 
       if (!(sql instanceof Array)) { sql = [sql] }

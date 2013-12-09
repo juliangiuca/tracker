@@ -77,14 +77,13 @@ server.get('/tp/:tracking', function (req, res, next) {
     });
 });
 
-var conString = "postgres://" +
-  settings.database.username +
-  ":" + settings.database.password +
-  "@" + settings.database.host + 
-  "/" + settings.database.database;
+pg.defaults.user     = settings.database.username
+pg.defaults.password = (settings.database.password || null)
+pg.defaults.host     = settings.database.host || "localhost"
+pg.defaults.database = settings.database.database;
 
-pg.connect(conString, function(err, client, done) {
-  query.init({pool: pg, dbUrl: conString})
+pg.connect(function(err, client, done) {
+  query.init({pool: pg})
 
   var port = process.env.PORT || 5000;
   server.listen(port, function () {
