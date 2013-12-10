@@ -36,7 +36,7 @@ namespace :deploy do
     on roles(:all) do
       execute "mkdir -p /data/tracker/shared/config/"
       execute "wget --user=#{ENV['BITBUCKET_USER']} --password='#{ENV['BITBUCKET_PASSWORD']}' -q -N https://bitbucket.org/localtoast/secret-files/raw/master/tracker/settings.production.json -O /data/tracker/shared/config/settings.json"
-      execute "wget --user=#{ENV['BITBUCKET_USER']} --password='#{ENV['BITBUCKET_PASSWORD']}' -q -N https://bitbucket.org/localtoast/secret-files/raw/master/tracker/newrelic.js -O /data/tracker/shared/config/newrelic.js"
+      execute "wget --user=#{ENV['BITBUCKET_USER']} --password='#{ENV['BITBUCKET_PASSWORD']}' -q -N https://bitbucket.org/localtoast/secret-files/raw/master/tracker/newrelic.js -O /data/tracker/shared/newrelic.js"
     end
   end
 
