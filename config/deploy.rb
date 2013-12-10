@@ -10,7 +10,7 @@ set :repo_url, 'git@github.com:juliangiuca/tracker.git'
 # set :log_level, :debug
 # set :pty, true
 
- set :linked_files, %w{config/settings.json}
+ set :linked_files, %w{config/settings.json config/newrelic.js}
  #set :linked_dirs, %w{bin logs tmp/pids tmp/cache tmp/sockets}
 
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
@@ -36,6 +36,7 @@ namespace :deploy do
     on roles(:all) do
       execute "mkdir -p /data/tracker/shared/config/"
       execute "wget --user=#{ENV['BITBUCKET_USER']} --password='#{ENV['BITBUCKET_PASSWORD']}' -q -N https://bitbucket.org/localtoast/secret-files/raw/master/tracker/settings.production.json -O /data/tracker/shared/config/settings.json"
+      execute "wget --user=#{ENV['BITBUCKET_USER']} --password='#{ENV['BITBUCKET_PASSWORD']}' -q -N https://bitbucket.org/localtoast/secret-files/raw/master/tracker/newrelic.js -O /data/tracker/shared/config/newrelic.json"
     end
   end
 
