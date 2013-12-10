@@ -11,7 +11,7 @@ set :repo_url, 'git@github.com:juliangiuca/tracker.git'
 # set :pty, true
 
  set :linked_files, %w{config/settings.json newrelic.js}
- #set :linked_dirs, %w{bin logs tmp/pids tmp/cache tmp/sockets}
+ set :linked_dirs, %w{log}
 
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 set :keep_releases, 3
