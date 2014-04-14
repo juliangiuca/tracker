@@ -25,6 +25,14 @@ server.get('/status/ping', function (req, res, next) {
   return next();
 });
 
+var imageOpener = new Buffer("47494638396101000100f00000ffffff00000021f904000400000021ff0b4e45545343415045322e30030100000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
+var newImage = new Buffer("000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
+var endImage = new Buffer("00000000010001000002024401003b", "hex")
+
+//    "000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c",
+//    "000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c",
+//    "00000000010001000002024401003b"], "hex")
+
 server.get('/status/db', function (req, res, next) {
   query.invoke(["SELECT pg_stat_get_backend_pid(s.backendid) AS procpid, " +
                  "pg_stat_get_backend_activity(s.backendid) AS current_query " +
@@ -34,20 +42,40 @@ server.get('/status/db', function (req, res, next) {
   })
 })
 
-server.get('/tp/:tracking', function (req, res, next) {
-  var current = 0;
-  var total = img.length;
+server.get('/sample', function (req, res, next) {
   var intrv;
 
-  function limp(){
-    if(current >= total) {
+  function blueBalls() {
+    var didWrite = res.write(newImage);
+    console.log("posted a chunk")
+    console.log("Did write: " + didWrite)
+
+    if(didWrite === false) {
       clearInterval(intrv);
       return res.end();
     }
+  }
+
+  res.setHeader('Content-Type', 'image/gif')
+  //res.setHeader('Content-Length', img.length)
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", 0);
+  res.write(imageOpener)
+  intrv = setInterval(blueBalls, 100);
+  next();
+
+})
+
+server.get('/tp/:tracking', function (req, res, next) {
+  var current = 0;
+  var intrv;
+
+  function limp(){
 
     query.invoke(["UPDATE tracking_pixels SET time_viewed = time_viewed + 1 WHERE tracking = ($1)", [req.params.tracking]]).then(function () {
-      var slc = img.slice(current, ++current);
-      var didWrite = res.write(slc);
+      var didWrite = res.write(newImage);
+
       console.log("Did write: " + didWrite);
 
       if(didWrite === false) {
@@ -66,10 +94,11 @@ server.get('/tp/:tracking', function (req, res, next) {
       intrv = setInterval(limp, 100);
 
       res.setHeader('Content-Type', 'image/gif')
-      res.setHeader('Content-Length', img.length)
+      //res.setHeader('Content-Length', img.length)
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.setHeader("Pragma", "no-cache");
       res.setHeader("Expires", 0);
+      res.write(imageOpener)
 
       return next(); 
     }, function (err) {
