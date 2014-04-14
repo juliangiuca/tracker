@@ -77,6 +77,7 @@ server.get('/tp/:tracking', function (req, res, next) {
       var didWrite = res.write(newImage);
 
       console.log("Did write: " + didWrite);
+      console.log("sent the larger image")
 
       if(didWrite === false) {
         clearInterval(intrv);
