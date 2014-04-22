@@ -68,6 +68,9 @@ server.get('/sample', function (req, res, next) {
 })
 
 server.get('/tp/:tracking', function (req, res, next) {
+
+  //req.headers['user-agent'].match(/GoogleImageProxy/)
+
   var current = 0;
   var intrv;
 
