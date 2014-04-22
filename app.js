@@ -117,8 +117,10 @@ pg.defaults.database = settings.database.database;
 pg.connect(function(err, client, done) {
   query.init({pool: pg})
 
-  var port = process.env.PORT || 5000;
+  var port = process.env.PORT || 80;
   server.listen(port, function () {
+    process.setgid('tracker');
+    process.setuid('tracker');
     console.log('%s listening at %s', server.name, server.url);
   });
 });
