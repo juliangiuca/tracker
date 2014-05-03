@@ -73,7 +73,6 @@ server.get('/tp/:tracking', function (req, res, next) {
 
   var current = 0;
   var intrv;
-  var googled = !!req.headers['user-agent'].match(/GoogleImageProxy/)
 
   function limp(view_id){
     console.log("The view ID is: " + view_id);
@@ -93,6 +92,8 @@ server.get('/tp/:tracking', function (req, res, next) {
   query.invoke(["UPDATE tracking_pixels set date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1) RETURNING id", [req.params.tracking]])
     .then(function (results) {
       var tp_id = results[0].id;
+      var googled = !!req.headers['user-agent'].match(/GoogleImageProxy/);
+      console.log("googled" + googled);
       return query.invoke(["INSERT INTO views (tracking_pixel_id, agent, referer, googled, created_at) VALUES ($1, $2, $3, $4, now()) RETURNING id", [tp_id, req.headers['user-agent'], req.headers["referer"], googled]])
     }).then(function(results) {
       var view_id = results[0].id;
