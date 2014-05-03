@@ -77,7 +77,10 @@ server.get('/tp/:tracking', function (req, res, next) {
   function limp(view_id){
     console.log("The view ID is: " + view_id);
 
-    query.invoke(["UPDATE view SET time = time + 1 WHERE id = ($1)", [view_id]]).then(function () {
+    query.invoke(["UPDATE views SET time = time + 1 WHERE id = ($1)", [view_id]])
+      .then(function (res, err) {
+      if (err) { console.log(err) }
+
       var didWrite = res.write(newImage);
       console.log("Did write: " + didWrite);
 
