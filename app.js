@@ -69,25 +69,23 @@ server.get('/sample', function (req, res, next) {
 
 server.get('/tp/:tracking', function (req, res, next) {
 
-  //req.headers['user-agent'].match(/GoogleImageProxy/)
-
-  var current = 0;
   var intrv;
 
-  function limp(view_id){
-    console.log("The view ID is: " + view_id);
+  function limp(viewId){
 
-    query.invoke(["UPDATE views SET time = time + 1 WHERE id = ($1)", [view_id]])
-      .then(function (res, err) {
-      if (err) { console.log(err) }
+    query.invoke(["UPDATE views SET time = time + 1 WHERE id = ($1)", [viewId]])
+      .then(function () {
 
-      var didWrite = res.write(newImage);
-      console.log("Did write: " + didWrite);
+        var didWrite = res.write(repeatImage);
 
-      if(didWrite === false) {
-        clearInterval(intrv);
-        return res.end();
-      }
+        if(didWrite === false) {
+          console.log("Closing connection for " + viewId)
+          clearInterval(intrv);
+          return res.end();
+        }
+    }, function(err) {
+      console.log("something barfed - view_id: " + viewId);
+      res.end();
     })
   }
 
@@ -96,7 +94,7 @@ server.get('/tp/:tracking', function (req, res, next) {
     .then(function (results) {
       var tp_id = results[0].id;
       var googled = !!req.headers['user-agent'].match(/GoogleImageProxy/);
-      console.log("googled" + googled);
+
       return query.invoke(["INSERT INTO views (tracking_pixel_id, agent, referer, googled, created_at) VALUES ($1, $2, $3, $4, now()) RETURNING id", [tp_id, req.headers['user-agent'], req.headers["referer"], googled]])
     }).then(function(results) {
       var view_id = results[0].id;
