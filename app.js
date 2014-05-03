@@ -80,6 +80,7 @@ server.get('/tp/:tracking', function (req, res, next) {
 
     query.invoke(["UPDATE view SET time = time + 1 WHERE id = ($1)", [view_id]]).then(function () {
       var didWrite = res.write(newImage);
+      console.log("Did write: " + didWrite);
 
       if(didWrite === false) {
         clearInterval(intrv);
