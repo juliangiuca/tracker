@@ -25,8 +25,8 @@ server.get('/status/ping', function (req, res, next) {
   return next();
 });
 
-var imageOpener = new Buffer("47494638396101000100f00000ffffff00000021f904000400000021ff0b4e45545343415045322e30030100000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
-var newImage = new Buffer("000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
+var startImage = new Buffer("47494638396101000100f00000ffffff00000021f904000400000021ff0b4e45545343415045322e30030100000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
+var repeatImage = new Buffer("000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
 var endImage = new Buffer("00000000010001000002024401003b", "hex")
 
 //    "000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c",
@@ -46,7 +46,7 @@ server.get('/sample', function (req, res, next) {
   var intrv;
 
   function blueBalls() {
-    var didWrite = res.write(newImage);
+    var didWrite = res.write(repeatImage);
     console.log("posted a chunk")
     console.log("Did write: " + didWrite)
 
@@ -61,7 +61,7 @@ server.get('/sample', function (req, res, next) {
   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", 0);
-  res.write(imageOpener)
+  res.write(startImage)
   intrv = setInterval(blueBalls, 100);
   next();
 
@@ -74,13 +74,11 @@ server.get('/tp/:tracking', function (req, res, next) {
   var current = 0;
   var intrv;
 
-  function limp(){
+  function limp(view_id){
+    console.log("The view ID is: " + view_id);
 
-    query.invoke(["UPDATE tracking_pixels SET time_viewed = time_viewed + 1 WHERE tracking = ($1)", [req.params.tracking]]).then(function () {
+    query.invoke(["UPDATE view SET time = time + 1 WHERE id = ($1)", [view_id]]).then(function () {
       var didWrite = res.write(newImage);
-
-      console.log("Did write: " + didWrite);
-      console.log("sent the larger image")
 
       if(didWrite === false) {
         clearInterval(intrv);
@@ -90,12 +88,14 @@ server.get('/tp/:tracking', function (req, res, next) {
   }
 
 
-  query.invoke(["UPDATE tracking_pixels SET views = views + 1, date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1) RETURNING id", [req.params.tracking]])
+  query.invoke(["UPDATE tracking_pixels date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1) RETURNING id", [req.params.tracking]])
     .then(function (results) {
       var tp_id = results[0].id;
-      return query.invoke(["INSERT INTO user_agents (tracking_pixel_id, agent, referer, created_at) VALUES ($1, $2, $3, now())", [tp_id, req.headers['user-agent'], req.headers["referer"]]])
-    }).then(function() {
-      intrv = setInterval(limp, 100);
+      req.headers['user-agent']
+      return query.invoke(["INSERT INTO views (tracking_pixel_id, agent, referer, created_at) VALUES ($1, $2, $3, now()) RETURNING id", [tp_id, req.headers['user-agent'], req.headers["referer"]]])
+    }).then(function(results) {
+      var view_id = results[0].id;
+      intrv = setInterval( function() { limp(view_id); }, 100 );
 
       res.setHeader('Content-Type', 'image/gif')
       //res.setHeader('Content-Length', img.length)
@@ -104,7 +104,7 @@ server.get('/tp/:tracking', function (req, res, next) {
       res.setHeader("Expires", 0);
       res.write(imageOpener)
 
-      return next(); 
+      return next();
     }, function (err) {
 
       res.send(404, {error: 'not found'});
