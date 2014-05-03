@@ -89,7 +89,7 @@ server.get('/tp/:tracking', function (req, res, next) {
   }
 
 
-  query.invoke(["UPDATE tracking_pixels date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1) RETURNING id", [req.params.tracking]])
+  query.invoke(["UPDATE tracking_pixels set date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1) RETURNING id", [req.params.tracking]])
     .then(function (results) {
       var tp_id = results[0].id;
       return query.invoke(["INSERT INTO views (tracking_pixel_id, agent, referer, googled, created_at) VALUES ($1, $2, $3, $4, now()) RETURNING id", [tp_id, req.headers['user-agent'], req.headers["referer"], googled]])
