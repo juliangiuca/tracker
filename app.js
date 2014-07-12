@@ -16,6 +16,7 @@ var server = restify.createServer({
   name: 'tracker',
   version: '1.0.0'
 });
+
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
@@ -25,14 +26,12 @@ server.get('/status/ping', function (req, res, next) {
   return next();
 });
 
+// Define the different components of a repeating gif. We essentially keep sending 1px images in a gif that won't end.
 var startImage = new Buffer("47494638396101000100f00000ffffff00000021f904000400000021ff0b4e45545343415045322e30030100000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
 var repeatImage = new Buffer("000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c", "hex")
 var endImage = new Buffer("00000000010001000002024401003b", "hex")
 
-//    "000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c",
-//    "000000000100010000020244010021f904000400000021ff0b496d6167654d616769636b0e67616d6d613d302e343534353435002c",
-//    "00000000010001000002024401003b"], "hex")
-
+// Is the db up? Are we connected?
 server.get('/status/db', function (req, res, next) {
   query.invoke(["SELECT pg_stat_get_backend_pid(s.backendid) AS procpid, " +
                  "pg_stat_get_backend_activity(s.backendid) AS current_query " +
@@ -42,13 +41,12 @@ server.get('/status/db', function (req, res, next) {
   })
 })
 
-server.get('/sample', function (req, res, next) {
+// Let's look at a demo of the image being streamed
+server.get('/status/demo', function (req, res, next) {
   var intrv;
 
-  function blueBalls() {
+  function staggerImage() {
     var didWrite = res.write(repeatImage);
-    console.log("posted a chunk")
-    console.log("Did write: " + didWrite)
 
     if(didWrite === false) {
       clearInterval(intrv);
@@ -62,17 +60,19 @@ server.get('/sample', function (req, res, next) {
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", 0);
   res.write(startImage)
-  intrv = setInterval(blueBalls, 100);
+  intrv = setInterval(staggerImage, 100);
   next();
 
 })
 
+// The tracking magic
 server.get('/tp/:tracking', function (req, res, next) {
 
   var intrv;
 
-  function limp(viewId){
+  function staggerImage(viewId){
 
+    // Increment the db counter by 1 - this is called every 100ms
     query.invoke(["UPDATE views SET time = time + 1 WHERE id = ($1)", [viewId]])
       .then(function () {
 
@@ -90,15 +90,20 @@ server.get('/tp/:tracking', function (req, res, next) {
   }
 
 
+  // Someone opens the email
   query.invoke(["UPDATE tracking_pixels set date_first_viewed = LEAST(date_first_viewed, now()) WHERE tracking = ($1) RETURNING id", [req.params.tracking]])
     .then(function (results) {
       var tp_id = results[0].id;
+
+      // Is this email opened by Gmail?
       var googled = !!req.headers['user-agent'].match(/GoogleImageProxy/);
 
+      // Record the open event with user agent details
       return query.invoke(["INSERT INTO views (tracking_pixel_id, agent, referer, googled, created_at) VALUES ($1, $2, $3, $4, now()) RETURNING id", [tp_id, req.headers['user-agent'], req.headers["referer"], googled]])
     }).then(function(results) {
       var view_id = results[0].id;
-      intrv = setInterval( function() { limp(view_id); }, 100 );
+      // Set up the stream
+      intrv = setInterval( function() { staggerImage(view_id); }, 100 );
 
       res.setHeader('Content-Type', 'image/gif')
       //res.setHeader('Content-Length', img.length)
