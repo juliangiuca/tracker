@@ -4,7 +4,7 @@
 This is the counterpart to [Emailer](https://github.com/juliangiuca/emailer).
 
 This streams a unique tracking pixel - sending the next frame in a 1x1 px gif every
-100 ms.  
+100 ms. It works by sending just enough valid data to make the client (browser / email client) think the connection is still active.
 
 
 ### Config
