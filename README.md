@@ -11,6 +11,9 @@ This streams a unique tracking pixel - sending the next frame in a 1x1 px gif ev
 This will probably barf without newrelic.js. You also need to have a database set up -
 the schema is in [Emailer](https://github.com/juliangiuca/emailer).
 
+You also need to define a config/database.yml file.
+As part of the deployment process, this is grabbing my secret files from BitBucket. Clearly this won't work for you.
+
 ### Tracking pixel
 `/tp/<token>` Where token is a unique identifier for an email to a person.
 
@@ -30,6 +33,9 @@ a valid gif on every interval made more sense. Both work.
 This is essentially a hax around how Gif's work. They don't define how large
 they are, so we can start a gif, then send over an infinite number of frames,
 and the image is still valid.
+
+#### Why is there Ruby in your Node?
+Capistrano for deployment. It works. Deal with it.
 
 ### License
 MIT license.
